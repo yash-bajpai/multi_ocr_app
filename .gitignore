@@ -23,3 +23,15 @@ uploads/
 build/
 dist/
 *.egg-info/
+# Models and Binaries
+tesseract-ocr/
+poppler_lib/
+poppler.zip
+tesseract_installer.exe
+*.whl
+
+# Logs and Temp
+*.log
+inference_results/
+output/
+log_output/
