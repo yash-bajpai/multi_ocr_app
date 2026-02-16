@@ -1,0 +1,11 @@
+flask
+pytesseract
+opencv-python-headless
+pillow
+pdf2image
+google-cloud-vision
+boto3
+numpy
+easyocr
+paddlepaddle
+paddleocr
