@@ -9,7 +9,8 @@ from paddleocr import PaddleOCR
 # ✅ Initialize once
 ocr = PaddleOCR(
     use_angle_cls=True,
-    lang='en'
+    lang='en',
+    show_log=False
 )
 
 def extract_text(image_path):

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR | Theory & Application</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@300;400;500&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fcfcfc;
+            --text: #1a1a1a;
+            --accent: #475569;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            scroll-behavior: smooth;
+        }
+
+        .serif {
+            font-family: 'Instrument Serif', serif;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .border-thin {
+            border: 1px solid #e2e8f0;
+        }
+
+        .step-card:hover {
+            border-color: #94a3b8;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body x-data="{ page: 'theory' }">
+
+    <nav
+        class="fixed top-0 w-full z-50 bg-[#fcfcfc]/80 backdrop-blur-md border-b border-gray-100 px-12 py-6 flex justify-between items-center">
+        <div class="text-xl font-medium tracking-tight">Optical <span class="text-slate-400">Recognition</span></div>
+        <div class="flex gap-10 text-sm font-medium uppercase tracking-widest">
+            <button @click="page = 'theory'" :class="page === 'theory' ? 'text-black' : 'text-slate-400'"
+                class="transition-colors">The Theory</button>
+            <button @click="page = 'engine'" :class="page === 'engine' ? 'text-black' : 'text-slate-400'"
+                class="transition-colors">The Engine</button>
+        </div>
+    </nav>
+
+    <main x-show="page === 'theory'" x-transition.opacity class="pt-40 pb-20 px-8 max-w-4xl mx-auto">
+
+        <section class="mb-32">
+            <h1 class="serif text-7xl mb-8 leading-tight">The mechanics of <br>machine legibility.</h1>
+            <p class="text-xl text-slate-600 leading-relaxed font-light max-w-2xl">
+                Optical Character Recognition (OCR) is the electronic conversion of images into machine-encoded text. It
+                is a synthesis of computer vision, linguistics, and statistical probability.
+            </p>
+        </section>
+
+        <section class="space-y-24">
+
+            <div class="grid md:grid-cols-3 gap-12 items-start">
+                <div class="col-span-1">
+                    <span class="mono text-xs text-slate-400 uppercase tracking-tighter">01 / Acquisition</span>
+                    <h3 class="text-2xl font-medium mt-4">Thresholding & Binarization</h3>
+                </div>
+                <div class="col-span-2 text-slate-600 leading-relaxed">
+                    <p>Before recognition begins, the noise of the physical world must be stripped. The model applies an
+                        adaptive thresholding algorithm to separate the "ink" from the "paper."</p>
+                    <div class="mt-6 p-6 bg-slate-50 border-thin rounded-sm">
+                        <p class="mono text-sm">Mathematically, we define the binary output $B$ based on the local mean
+                            $\mu$ and standard deviation $\sigma$:</p>
+                        <p class="mt-4 text-center text-lg italic tracking-widest">
+                            $T(x,y) = \mu(x,y) \cdot [1 + k \cdot (\frac{\sigma(x,y)}{R} - 1)]$
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-12 items-start">
+                <div class="col-span-1">
+                    <span class="mono text-xs text-slate-400 uppercase tracking-tighter">02 / Feature Extraction</span>
+                    <h3 class="text-2xl font-medium mt-4">Decomposition into Primitives</h3>
+                </div>
+                <div class="col-span-2 text-slate-600 leading-relaxed">
+                    <p>The system doesn't see a "B"; it sees a vertical line and two closed loops. Modern OCR uses
+                        **Convolutional Neural Networks (CNNs)** to identify these features by sliding a small matrix
+                        (kernel) across the image to detect edges.</p>
+
+                    <svg class="mt-8 w-full h-32 opacity-30" viewBox="0 0 400 100">
+                        <path d="M10 10 H90 V90 H10 Z" fill="none" stroke="black" />
+                        <rect x="15" y="15" width="10" height="10" stroke="black" fill="none" />
+                        <line x1="25" y1="25" x2="150" y2="50" stroke="black" stroke-dasharray="4" />
+                        <circle cx="150" cy="50" r="20" stroke="black" fill="none" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-12 items-start">
+                <div class="col-span-1">
+                    <span class="mono text-xs text-slate-400 uppercase tracking-tighter">03 / Sequence Prediction</span>
+                    <h3 class="text-2xl font-medium mt-4">Contextual Inference</h3>
+                </div>
+                <div class="col-span-2 text-slate-600 leading-relaxed">
+                    <p>Since images are often blurry, the model uses an **RNN (Recurrent Neural Network)** to look at
+                        sequences. If it sees "O-C-?", the probability of the next character being "R" is mathematically
+                        higher than it being "P" based on dictionary weightings.</p>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="mt-32 pt-20 border-t border-gray-100">
+            <h2 class="serif text-4xl mb-12">System Architecture</h2>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-6 border-thin rounded-lg">
+                    <span>Preprocessing Layer</span>
+                    <span class="text-slate-400 text-sm italic">Deskewing, Denoising</span>
+                </div>
+                <div class="flex justify-between items-center p-6 border-thin rounded-lg bg-slate-900 text-white">
+                    <span>Neural Inference Engine</span>
+                    <span class="text-slate-500 text-sm italic">LSTM + CTC Loss</span>
+                </div>
+                <div class="flex justify-between items-center p-6 border-thin rounded-lg">
+                    <span>Post-Processing</span>
+                    <span class="text-slate-400 text-sm italic">Spellcheck, Formatting</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <main x-show="page === 'engine'" x-transition.opacity x-cloak class="pt-40 pb-20 px-8 max-w-6xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-16">
+
+            <div class="space-y-12">
+                <div>
+                    <h2 class="serif text-5xl mb-4">Neural Workbench</h2>
+                    <p class="text-slate-500">Select your local model parameters and initiate the extraction layer.</p>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="space-y-2">
+                        <label class="mono text-[10px] uppercase tracking-widest text-slate-400">Model Selector</label>
+                        <select
+                            class="w-full bg-transparent border-b border-slate-200 py-3 focus:outline-none focus:border-black transition-colors appearance-none cursor-pointer">
+                            <option>Tesseract 5.0 (Standard)</option>
+                            <option>OCR-Nano (Optimized)</option>
+                            <option>Legacy Pattern Matcher</option>
+                        </select>
+                    </div>
+
+                    <div
+                        class="border-thin rounded-2xl p-12 flex flex-col items-center justify-center border-dashed hover:bg-slate-50 transition-colors cursor-pointer group">
+                        <div
+                            class="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5">
+                                <path d="M12 5v14M5 12h14" />
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium">Upload Document</span>
+                        <span class="text-xs text-slate-400 mt-1">PDF, JPG, or PNG up to 10MB</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col h-full">
+                <div class="flex justify-between items-end mb-4 px-2">
+                    <span class="mono text-[10px] uppercase tracking-widest text-slate-400">Output Stream</span>
+                    <div class="flex gap-4">
+                        <button
+                            class="text-[10px] uppercase font-bold text-slate-400 hover:text-black tracking-widest transition-colors">Copy</button>
+                        <button
+                            class="text-[10px] uppercase font-bold text-slate-400 hover:text-black tracking-widest transition-colors">Clear</button>
+                    </div>
+                </div>
+                <div class="flex-grow bg-white border-thin rounded-2xl p-8 shadow-sm">
+                    <textarea
+                        class="w-full h-full mono text-sm leading-relaxed text-slate-700 bg-transparent resize-none focus:outline-none"
+                        placeholder="System idle. Waiting for input..."></textarea>
+                </div>
+                <button
+                    class="mt-6 w-full py-5 bg-slate-900 text-white text-xs font-bold uppercase tracking-[0.2em] rounded-lg hover:bg-black transition-all">
+                    Process Image
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <footer
+        class="mt-20 py-12 px-12 border-t border-gray-100 flex justify-between items-center text-[10px] mono uppercase text-slate-400 tracking-widest">
+        <div>© 2026 Studio Recognition</div>
+        <div>No-Makeup Design v1.0</div>
+    </footer>
+
+</body>
+
+</html>

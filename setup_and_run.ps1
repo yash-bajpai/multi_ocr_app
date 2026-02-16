@@ -1,7 +1,7 @@
 # Check if script is running with necessary permissions
 $ErrorActionPreference = "Stop"
 
-Write-Host "Running Automated Setup Script v2" -ForegroundColor Magenta
+Write-Host "Running Automated Setup Script v3 (Portable Mode)" -ForegroundColor Magenta
 
 function Check-Command($cmd, $name) {
     if (Get-Command $cmd -ErrorAction SilentlyContinue) {
@@ -13,11 +13,20 @@ function Check-Command($cmd, $name) {
 
 Write-Host "Checking System Requirements..." -ForegroundColor Cyan
 
-# 1. Tesseract Check & Auto-Configuration
+# 1. Tesseract Check & Auto-Install
 $tesseractFound = Check-Command "tesseract" "Tesseract-OCR"
 
+# Check local portable path first
+$localTesseractPath = "$PWD\tesseract-ocr"
+if (-not $tesseractFound -and (Test-Path "$localTesseractPath\tesseract.exe")) {
+    Write-Host "Found local Tesseract at $localTesseractPath. Configuring..." -ForegroundColor Green
+    $env:Path = "$localTesseractPath;" + $env:Path
+    $env:TESSDATA_PREFIX = "$localTesseractPath\tessdata"
+    $tesseractFound = $true
+}
+
 if (-not $tesseractFound) {
-    # Check common locations
+    # Check common system locations
     $commonPaths = @(
         "C:\Program Files\Tesseract-OCR",
         "C:\Program Files (x86)\Tesseract-OCR",
@@ -26,7 +35,7 @@ if (-not $tesseractFound) {
     
     foreach ($path in $commonPaths) {
         if (Test-Path "$path\tesseract.exe") {
-            Write-Host "Found Tesseract at $path. Adding to PATH for this session..." -ForegroundColor Green
+            Write-Host "Found properly installed Tesseract at $path. Adding to PATH..." -ForegroundColor Green
             $env:Path = "$path;" + $env:Path
             $tesseractFound = $true
             break
@@ -38,31 +47,37 @@ if (-not $tesseractFound) {
     Write-Warning "Tesseract-OCR not found."
     Write-Host "Downloading Tesseract Installer..." -ForegroundColor Yellow
     
+    # Using specific version from UB-Mannheim
     $installerUrl = "https://github.com/UB-Mannheim/tesseract/releases/download/v5.3.3/tesseract-ocr-w64-setup-5.3.3.20231005.exe"
     $installerPath = "$PWD\tesseract_installer.exe"
     
     try {
-        Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath -ErrorAction Stop
+        # GitHub requires UserAgent
+        Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath -UserAgent "PowerShell" -ErrorAction Stop
         Write-Host "Installer downloaded to $installerPath" -ForegroundColor Green
-        Write-Host "Launching installer... Please complete the installation." -ForegroundColor Yellow
-        Write-Host "IMPORTANT: You do NOT need to add to PATH manually, just install dependencies." -ForegroundColor Yellow
-        $process = Start-Process $installerPath -Wait -PassThru
         
-        # Re-check after install
-        foreach ($path in $commonPaths) {
-            if (Test-Path "$path\tesseract.exe") {
-                Write-Host "Found Tesseract at $path after install. Adding to PATH..." -ForegroundColor Green
-                $env:Path = "$path;" + $env:Path
-                $tesseractFound = $true
-                break
-            }
+        Write-Host "Installing Tesseract locally to $localTesseractPath..." -ForegroundColor Yellow
+        # Silent install to local directory
+        $proc = Start-Process -FilePath $installerPath -ArgumentList "/S", "/D=$localTesseractPath" -Wait -PassThru
+        
+        if (Test-Path "$localTesseractPath\tesseract.exe") {
+            Write-Host "Tesseract installed successfully!" -ForegroundColor Green
+            $env:Path = "$localTesseractPath;" + $env:Path
+            $env:TESSDATA_PREFIX = "$localTesseractPath\tessdata"
+            
+            # Clean up installer
+            Remove-Item $installerPath -Force -ErrorAction SilentlyContinue
+        } else {
+            Write-Error "Silent install failed or required elevation. Please check $installerPath manually."
         }
+        
     } catch {
-        Write-Warning "Could not auto-download installer. Please download from: https://github.com/UB-Mannheim/tesseract/wiki"
+        Write-Warning "Auto-download/install failed: $_"
+        Write-Host "Please manually download from: https://github.com/UB-Mannheim/tesseract/wiki" -ForegroundColor Red
     }
 }
 
-# 2. Poppler Check
+# 2. Poppler Check & Auto-Install
 if (-not (Check-Command "pdftoppm" "Poppler")) {
     Write-Warning "Poppler not found. Downloading..."
     
@@ -73,7 +88,7 @@ if (-not (Check-Command "pdftoppm" "Poppler")) {
     try {
         if (-not (Test-Path $zipPath)) {
             Write-Host "Downloading Poppler..." -ForegroundColor Yellow
-            Invoke-WebRequest -Uri $popplerUrl -OutFile $zipPath -ErrorAction Stop
+            Invoke-WebRequest -Uri $popplerUrl -OutFile $zipPath -UserAgent "PowerShell" -ErrorAction Stop
         }
         
         if (-not (Test-Path $extractPath)) {
@@ -81,19 +96,14 @@ if (-not (Check-Command "pdftoppm" "Poppler")) {
             Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
         }
         
-        # Find the bin folder. Usually poppler_lib/poppler-xx/Library/bin
         $binPath = Get-ChildItem -Path $extractPath -Recurse -Filter "pdftoppm.exe" | Select-Object -First 1 -ExpandProperty DirectoryName
-        
         if ($binPath) {
             Write-Host "Found Poppler bin at $binPath. Adding to PATH..." -ForegroundColor Green
             $env:Path = "$binPath;" + $env:Path
-        } else {
-            Write-Error "Could not find pdftoppm.exe in extracted archive."
         }
         
     } catch {
         Write-Warning "Failed to setup Poppler: $_"
-        Write-Host "PDF Support might not work."
     }
 }
 

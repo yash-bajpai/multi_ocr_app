@@ -111,7 +111,10 @@ def index():
             # if os.path.exists(file_path):
             #     os.remove(file_path)
                 
-    return render_template('index.html', extracted_text=extracted_text)
+    # If text extracted, default page to 'engine' to show results
+    page_view = 'engine' if extracted_text else 'theory'
+    selected_engine = request.form.get('engine') if request.method == 'POST' else None
+    return render_template('app.html', extracted_text=extracted_text, page_view=page_view, selected_engine=selected_engine)
 
 if __name__ == '__main__':
     app.run(debug=True)
