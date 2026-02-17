@@ -1,16 +1,10 @@
-# ocr_engines/paddle_engine.py
-
 import paddle
 from paddleocr import PaddleOCR
-
-# ✅ CRITICAL FIX: disable oneDNN
-# paddle.set_flags({'FLAGS_use_onednn': False})
 
 # ✅ Initialize once
 ocr = PaddleOCR(
     use_angle_cls=True,
-    lang='en',
-    show_log=False
+    lang='en'
 )
 
 def extract_text(image_path):

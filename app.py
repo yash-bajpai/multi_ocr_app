@@ -12,6 +12,19 @@ import sys
 # Add project root to system path to ensure modules are found
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+# ✅ FIX: Monkey-patch AnalysisConfig to add missing set_optimization_level method
+# Must be done BEFORE importing PaddleOCR/paddlex via ocr_engines
+try:
+    import paddle
+    from paddle.base.libpaddle import AnalysisConfig
+    if not hasattr(AnalysisConfig, 'set_optimization_level'):
+        print("Monkey-patching AnalysisConfig.set_optimization_level")
+        def set_optimization_level(self, level):
+            pass
+        AnalysisConfig.set_optimization_level = set_optimization_level
+except Exception as e:
+    print(f"Warning: Could not monkey-patch AnalysisConfig: {e}")
+
 from ocr_engines import tesseract_engine, easyocr_engine, paddle_engine
 
 app = Flask(__name__)

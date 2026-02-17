@@ -8,9 +8,21 @@ def download_paddle():
     print("-" * 30)
     print("Checking PaddleOCR Models...")
     try:
+        # ✅ FIX: Monkey-patch AnalysisConfig
+        # Must be done BEFORE importing PaddleOCR
+        try:
+            from paddle.base.libpaddle import AnalysisConfig
+            if not hasattr(AnalysisConfig, 'set_optimization_level'):
+                def set_optimization_level(self, level):
+                    pass
+                AnalysisConfig.set_optimization_level = set_optimization_level
+        except Exception:
+            pass
+
         from paddleocr import PaddleOCR
+
         # Initializing triggers download if missing
-        ocr = PaddleOCR(use_angle_cls=True, lang='en', show_log=False)
+        ocr = PaddleOCR(use_angle_cls=True, lang='en')
         print("✅ PaddleOCR models are ready.")
     except Exception as e:
         print(f"❌ Error setting up PaddleOCR: {e}")

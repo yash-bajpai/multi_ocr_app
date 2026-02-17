@@ -170,6 +170,8 @@ if (-not (Test-Path ".venv")) {
 
 Write-Host "Installing dependencies..." -ForegroundColor Cyan
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
+# Force install stable CPU components first to avoid DLL issues
+.\.venv\Scripts\pip install torch==2.0.1+cpu torchvision==0.15.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
 .\.venv\Scripts\pip install -r requirements.txt
 
 # 5. Model Download
